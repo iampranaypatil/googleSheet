@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            width: 400px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h4 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #003b5b;
+            text-align: center;
+        }
+
+        form {
+            display: grid;
+            gap: 15px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .warning-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        #submit {
+            border: none;
+            background-color: #003b5b;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #submit:hover {
+            background-color: #001a2b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form method="post" action="" name="contact-form" id="contact-form">
+            <h4>Contact Us</h4>
+            <input type="text" name="your-name" placeholder="Your Name">
+            <div class="warning-message" id="name-warning"></div>
+
+            <input type="text" name="your-number" placeholder="Your Number">
+            <div class="warning-message" id="number-warning"></div>
+
+            <input type="email" name="your-email" placeholder="Your Email">
+            <div class="warning-message" id="email-warning"></div>
+
+            <textarea name="message" rows="7" placeholder="Your Message"></textarea>
+            <div class="warning-message" id="message-warning"></div>
+
+            <input type="submit" value="Submit" id="submit">
+        </form>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzw_e606kEK0sF3UMoccRAyp7j3WJq_pSStvoWaM1jJdBDndXHXguCYJqHPEL1AeGpD/exec';
+
+        const form = document.getElementById('contact-form');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (validateForm()) {
+                fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+                    .then(response => alert("Thank you! Your form is submitted successfully."))
+                    .then(() => { window.location.reload(); })
+                    .catch(error => console.error('Error!', error.message));
+            }
+        });
+
+		function validateForm() {
+    const name = form.elements['your-name'].value;
+    const number = form.elements['your-number'].value;
+    const email = form.elements['your-email'].value;
+    const message = form.elements['message'].value;
+
+    // Reset warning messages
+    resetWarnings();
+
+    let isValid = true;
+
+    // Check if any field is empty and show warning messages
+    if (!name || !/^[a-zA-Z\s]+$/.test(name)) {
+        displayWarning('name-warning', 'Please enter a valid name with only characters.');
+        isValid = false;
+    }
+
+    if (!number || !/^\d{10}$/.test(number)) {
+        displayWarning('number-warning', 'Please enter a valid 10-digit number.');
+        isValid = false;
+    }
+
+    if (!email) {
+        displayWarning('email-warning', 'Please enter your email.');
+        isValid = false;
+    }
+
+    if (!message) {
+        displayWarning('message-warning', 'Please enter your message.');
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+
+        function displayWarning(elementId, message) {
+            const warningElement = document.getElementById(elementId);
+            warningElement.textContent = message;
+        }
+
+        function resetWarnings() {
+            const warningElements = document.querySelectorAll('.warning-message');
+            warningElements.forEach(element => {
+                element.textContent = '';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <style>
+    body {
+      background-color: rgb(240, 207, 244);
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .row {
+      display: flex;
+      margin-bottom: 10px;
+      justify-content: center;
+    }
+
+    .row td {
+      padding: 5px;
+    }
+
+    input {
+      padding: 5px;
+      margin-right: 10px;
+    }
+
+    input[type="date"] {
+      width: 150px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 200px;
+    }
+
+    input[type="button"] {
+      padding: 8px 12px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    input[type="button"]:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Maheshwari Enterprises</h1>
+  <form id="dataForm">
+    <div id="rows">
+      <div class="row">
+        <td>
+          <input type="date" class="date" name="date" placeholder="DATE" required>
+          <div class="warning-message" id="date-warning"></div>
+        </td>
+        <td>
+          <input type="text" class="party_name" name="party_name" placeholder="PARTY NAME" required>
+          <div class="warning-message" id="party_name-warning"></div>
+        </td>
+        <td>
+          <input type="text" class="quality" name="quality" placeholder="QUALITY" required>
+          <div class="warning-message" id="quality-warning"></div>
+        </td>
+        <td>
+          <input type="number" class="quantity" name="quantity" placeholder="QUANTITY" required>
+          <div class="warning-message" id="quantity-warning"></div>
+        </td>
+        <td>
+          <input type="text" class="group" name="group" placeholder="GROUP" required>
+          <div class="warning-message" id="group-warning"></div>
+        </td>
+        <td>
+          <input type="date" class="delivery_date" name="delivery_date" placeholder="DELIVERY_DATE" required>
+          <div class="warning-message" id="delivery_date-warning"></div>
+        </td>
+      </div>
+    </div>
+
+    <input type="button" value="Add Row" onclick="addRow()">
+    <input type="button" value="Add Records" onclick="addRecords()">
+  </form>
+
+  <script>
+    var data = [];
+
+    function addRow() {
+      var rowsContainer = document.getElementById("rows");
+      var newRow = document.createElement("div");
+      newRow.className = "row";
+
+      newRow.innerHTML = '<td>' +
+        '<input type="date" class="date" name="date" placeholder="DATE" required>' +
+        '<div class="warning-message" id="date-warning"></div>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="party_name" name="party_name" placeholder="PARTY NAME" required>' +
+        '<div class="warning-message" id="party_name-warning"></div>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="quality" name="quality" placeholder="QUALITY" required>' +
+        '<div class="warning-message" id="quality-warning"></div>' +
+        '</td>' +
+        '<td>' +
+        '<input type="number" class="quantity" name="quantity" placeholder="QUANTITY" required>' +
+        '<div class="warning-message" id="quantity-warning"></div>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="group" name="group" placeholder="GROUP" required>' +
+        '<div class="warning-message" id="group-warning"></div>' +
+        '</td>' +
+        '<td>' +
+        '<input type="date" class="delivery_date" name="delivery_date" placeholder="DELIVERY_DATE" required>' +
+        '<div class="warning-message" id="delivery_date-warning"></div>' +
+        '</td>';
+
+      rowsContainer.appendChild(newRow);
+    }
+
+    function addRecords() {
+      var rows = document.getElementsByClassName("row");
+      data = [];
+
+      for (var i = 0; i < rows.length; i++) {
+        var date = rows[i].getElementsByClassName("date")[0].value;
+        var partyName = rows[i].getElementsByClassName("party_name")[0].value;
+        var quality = rows[i].getElementsByClassName("quality")[0].value;
+        var quantity = rows[i].getElementsByClassName("quantity")[0].value;
+        var group = rows[i].getElementsByClassName("group")[0].value;
+        var deliveryDate = rows[i].getElementsByClassName("delivery_date")[0].value;
+
+        data.push([date, partyName, quality, quantity, group, deliveryDate]);
+      }
+
+      google.script.run.withSuccessHandler(addRecordsToExistingSheet).getSheetUrl();
+    }
+
+    function addRecordsToExistingSheet(sheetUrl) {
+      google.script.run.addRecords(data, sheetUrl);
+
+      showAlert("Data added to the existing sheet!");
+      
+      document.getElementById("dataForm").reset();
+    }
+
+    function showAlert(message) {
+      window.alert(message);
+    }
+  </script>
+</body>
+
+</html>

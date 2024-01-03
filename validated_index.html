@@ -4,10 +4,10 @@
 <head>
   <base target="_top">
   <style>
-    body {
+     body {
       background-color: rgb(240, 207, 244);
       font-family: Arial, sans-serif;
-      text-align: center; /* Center-align the content */
+      text-align: center;
     }
 
     h1 {
@@ -50,7 +50,6 @@
       background-color: #45a049;
     }
 
-    /* Center-align the button container */
     .button-container {
       margin-top: 10px;
       text-align: center;
@@ -84,15 +83,16 @@
       </div>
     </div>
 
-    <!-- Button container for center alignment -->
     <div class="button-container">
       <input type="button" value="Add Row" onclick="addRow()">
+      <input type="button" value="Remove Row" onclick="removeRow()" disabled>
       <input type="button" value="Submit" onclick="addRecords()">
     </div>
   </form>
 
   <script>
     var data = [];
+    var rowCount = 1; // Track the number of rows
 
     function addRow() {
       var rowsContainer = document.getElementById("rows");
@@ -119,7 +119,23 @@
         '</td>';
 
       rowsContainer.appendChild(newRow);
+      rowCount++;
+
+      // Enable the "Remove Row" button after adding a row
+      document.querySelector('input[value="Remove Row"]').disabled = false;
     }
+
+    function removeRow() {
+      var rowsContainer = document.getElementById("rows");
+      if (rowCount > 1) {
+        rowsContainer.removeChild(rowsContainer.lastChild);
+        rowCount--;
+
+        // Disable the "Remove Row" button if no rows left
+        document.querySelector('input[value="Remove Row"]').disabled = rowCount === 1;
+      }
+    }
+
 
     function addRecords() {
       var rows = document.getElementsByClassName("row");
@@ -142,39 +158,41 @@
         var group = groupInput.value;
         var deliveryDate = deliveryDateInput.value;
 
-        // Reset previous warnings
         clearWarnings(dateInput, partyNameInput, qualityInput, quantityInput, groupInput, deliveryDateInput);
 
-        // Check if required fields are filled
         if (!date || !partyName || !quality || !quantity || !group || !deliveryDate) {
           isValid = false;
           displayAlert("Please fill in all required fields");
-          break; // Stop processing further if there's an issue
+          break;
         }
 
         if (!validateDate(date)) {
           isValid = false;
           displayAlert("Invalid date format");
-          break; // Stop processing further if there's an issue
+          break;
         }
 
         if (!validateDate(deliveryDate)) {
           isValid = false;
           displayAlert("Invalid delivery date format");
-          break; // Stop processing further if there's an issue
+          break;
         }
 
         if (!isDeliveryDateAfter(date, deliveryDate)) {
           isValid = false;
           displayAlert("Delivery date must be after the given date");
-          break; // Stop processing further if there's an issue
+          break;
         }
 
         data.push([date, partyName, quality, quantity, group, deliveryDate]);
       }
 
       if (isValid) {
-        google.script.run.withSuccessHandler(addRecordsToExistingSheet).getSheetUrl();
+        google.script.run.withSuccessHandler(function (sheetUrl) {
+          addRecordsToExistingSheet(sheetUrl);
+          // Reload the page after submitting the form
+          location.reload();
+        }).getSheetUrl();
       }
     }
 
@@ -183,7 +201,11 @@
 
       showAlert("Data added to the existing sheet!");
 
+      // Reset the form to its initial state
       document.getElementById("dataForm").reset();
+
+      // Close the Google Workspace dialog or sidebar
+      google.script.host.close();
     }
 
     function showAlert(message) {
@@ -191,7 +213,6 @@
     }
 
     function validateDate(dateString) {
-      // Check if the date is in the format YYYY-MM-DD
       var regex = /^\d{4}-\d{2}-\d{2}$/;
       return regex.test(dateString);
     }

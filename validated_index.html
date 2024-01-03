@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <style>
+    body {
+      background-color: rgb(240, 207, 244);
+      font-family: Arial, sans-serif;
+      text-align: center; /* Center-align the content */
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .row {
+      display: flex;
+      margin-bottom: 10px;
+      justify-content: center;
+    }
+
+    .row td {
+      padding: 5px;
+    }
+
+    input {
+      padding: 5px;
+      margin-right: 10px;
+    }
+
+    input[type="date"] {
+      width: 150px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 200px;
+    }
+
+    input[type="button"] {
+      padding: 8px 12px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    input[type="button"]:hover {
+      background-color: #45a049;
+    }
+
+    /* Center-align the button container */
+    .button-container {
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Maheshwari Enterprises</h1>
+  <form id="dataForm">
+    <div id="rows">
+      <div class="row">
+        <td>
+          <input type="date" class="date" name="date" placeholder="DATE" required>
+        </td>
+        <td>
+          <input type="text" class="party_name" name="party_name" placeholder="PARTY NAME" required>
+        </td>
+        <td>
+          <input type="text" class="quality" name="quality" placeholder="QUALITY" required>
+        </td>
+        <td>
+          <input type="number" class="quantity" name="quantity" placeholder="QUANTITY" required>
+        </td>
+        <td>
+          <input type="text" class="group" name="group" placeholder="GROUP" required>
+        </td>
+        <td>
+          <input type="date" class="delivery_date" name="delivery_date" placeholder="DELIVERY_DATE" required>
+        </td>
+      </div>
+    </div>
+
+    <!-- Button container for center alignment -->
+    <div class="button-container">
+      <input type="button" value="Add Row" onclick="addRow()">
+      <input type="button" value="Submit" onclick="addRecords()">
+    </div>
+  </form>
+
+  <script>
+    var data = [];
+
+    function addRow() {
+      var rowsContainer = document.getElementById("rows");
+      var newRow = document.createElement("div");
+      newRow.className = "row";
+
+      newRow.innerHTML = '<td>' +
+        '<input type="date" class="date" name="date" placeholder="DATE" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="party_name" name="party_name" placeholder="PARTY NAME" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="quality" name="quality" placeholder="QUALITY" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="number" class="quantity" name="quantity" placeholder="QUANTITY" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="group" name="group" placeholder="GROUP" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="date" class="delivery_date" name="delivery_date" placeholder="DELIVERY_DATE" required>' +
+        '</td>';
+
+      rowsContainer.appendChild(newRow);
+    }
+
+    function addRecords() {
+      var rows = document.getElementsByClassName("row");
+      data = [];
+
+      var isValid = true;
+
+      for (var i = 0; i < rows.length; i++) {
+        var dateInput = rows[i].getElementsByClassName("date")[0];
+        var partyNameInput = rows[i].getElementsByClassName("party_name")[0];
+        var qualityInput = rows[i].getElementsByClassName("quality")[0];
+        var quantityInput = rows[i].getElementsByClassName("quantity")[0];
+        var groupInput = rows[i].getElementsByClassName("group")[0];
+        var deliveryDateInput = rows[i].getElementsByClassName("delivery_date")[0];
+
+        var date = dateInput.value;
+        var partyName = partyNameInput.value;
+        var quality = qualityInput.value;
+        var quantity = quantityInput.value;
+        var group = groupInput.value;
+        var deliveryDate = deliveryDateInput.value;
+
+        // Reset previous warnings
+        clearWarnings(dateInput, partyNameInput, qualityInput, quantityInput, groupInput, deliveryDateInput);
+
+        // Check if required fields are filled
+        if (!date || !partyName || !quality || !quantity || !group || !deliveryDate) {
+          isValid = false;
+          displayAlert("Please fill in all required fields");
+          break; // Stop processing further if there's an issue
+        }
+
+        if (!validateDate(date)) {
+          isValid = false;
+          displayAlert("Invalid date format");
+          break; // Stop processing further if there's an issue
+        }
+
+        if (!validateDate(deliveryDate)) {
+          isValid = false;
+          displayAlert("Invalid delivery date format");
+          break; // Stop processing further if there's an issue
+        }
+
+        if (!isDeliveryDateAfter(date, deliveryDate)) {
+          isValid = false;
+          displayAlert("Delivery date must be after the given date");
+          break; // Stop processing further if there's an issue
+        }
+
+        data.push([date, partyName, quality, quantity, group, deliveryDate]);
+      }
+
+      if (isValid) {
+        google.script.run.withSuccessHandler(addRecordsToExistingSheet).getSheetUrl();
+      }
+    }
+
+    function addRecordsToExistingSheet(sheetUrl) {
+      google.script.run.addRecords(data, sheetUrl);
+
+      showAlert("Data added to the existing sheet!");
+
+      document.getElementById("dataForm").reset();
+    }
+
+    function showAlert(message) {
+      window.alert(message);
+    }
+
+    function validateDate(dateString) {
+      // Check if the date is in the format YYYY-MM-DD
+      var regex = /^\d{4}-\d{2}-\d{2}$/;
+      return regex.test(dateString);
+    }
+
+    function isDeliveryDateAfter(startDate, deliveryDate) {
+      return new Date(deliveryDate) > new Date(startDate);
+    }
+
+    function displayAlert(message) {
+      window.alert(message);
+    }
+
+    function clearWarnings() {
+      for (var i = 0; i < arguments.length; i++) {
+        var inputElement = arguments[i];
+        inputElement.setCustomValidity('');
+      }
+    }
+  </script>
+</body>
+
+</html>

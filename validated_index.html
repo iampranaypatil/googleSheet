@@ -197,16 +197,26 @@
     }
 
     function addRecordsToExistingSheet(sheetUrl) {
-      google.script.run.addRecords(data, sheetUrl);
+  google.script.run.addRecords(data, sheetUrl);
 
-      showAlert("Data added to the existing sheet!");
+  showAlert("Data added to the existing sheet!");
 
-      // Reset the form to its initial state
-      document.getElementById("dataForm").reset();
+  // Clear the rows container
+  var rowsContainer = document.getElementById("rows");
+  while (rowsContainer.firstChild) {
+    rowsContainer.removeChild(rowsContainer.firstChild);
+  }
 
-      // Close the Google Workspace dialog or sidebar
-      google.script.host.close();
-    }
+  // Add a new row after clearing the container
+  addRow();
+
+  // Reset the form to its initial state
+  document.getElementById("dataForm").reset();
+
+  // Close the Google Workspace dialog or sidebar
+  google.script.host.close();
+}
+
 
     function showAlert(message) {
       window.alert(message);

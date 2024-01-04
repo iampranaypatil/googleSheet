@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <style>
+     body {
+      background-color: rgb(240, 207, 244);
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .row {
+      display: flex;
+      margin-bottom: 10px;
+      justify-content: center;
+    }
+
+    .row td {
+      padding: 5px;
+    }
+
+    input {
+      padding: 5px;
+      margin-right: 10px;
+    }
+
+    input[type="date"] {
+      width: 150px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 200px;
+    }
+
+    input[type="button"] {
+      padding: 8px 12px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    input[type="button"]:hover {
+      background-color: #45a049;
+    }
+
+    .button-container {
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Maheshwari Enterprises</h1>
+  <form id="dataForm">
+    <div id="rows">
+      <div class="row">
+        <td>
+          <input type="date" class="date" name="date" placeholder="DATE" required>
+        </td>
+        <td>
+          <input type="text" class="party_name" name="party_name" placeholder="PARTY NAME" required>
+        </td>
+        <td>
+          <input type="text" class="station" name="station" placeholder="STATION" required>
+        </td>
+        <td>
+          <input type="text" class="couriername" name="couriername" placeholder="COURIER NAME" required>
+        </td>
+        <td>
+          <input type="text" class="dockerno" name="dockerno" placeholder="DOCKERNO" required>
+        </td>
+        <td>
+            <input type="text" class="narration" name="narration" placeholder="NARRATION" required>
+        </td>
+      </div>
+    </div>
+
+    <div class="button-container">
+      <input type="button" value="Add Row" onclick="addRow()">
+      <input type="button" value="Remove Row" onclick="removeRow()" disabled>
+      <input type="button" value="Submit" onclick="addRecords()">
+    </div>
+  </form>
+
+  <script>
+    var data = [];
+    var rowCount = 1; // Track the number of rows
+
+    function addRow() {
+      var rowsContainer = document.getElementById("rows");
+      var newRow = document.createElement("div");
+      newRow.className = "row";
+
+      newRow.innerHTML = '<td>' +
+        '<input type="date" class="date" name="date" placeholder="DATE" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="party_name" name="party_name" placeholder="PARTY NAME" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="station" name="station" placeholder="STATION" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="couriername" name="couriername" placeholder="COURIER NAME" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="dockerno" name="dockerno" placeholder="DOCKER NO" required>' +
+        '</td>' +
+        '<td>' +
+        '<input type="text" class="narration" name="narration" placeholder="NARRATION" required>' +
+        '</td>';
+
+      rowsContainer.appendChild(newRow);
+      rowCount++;
+
+      // Enable the "Remove Row" button after adding a row
+      document.querySelector('input[value="Remove Row"]').disabled = false;
+    }
+
+    function removeRow() {
+      var rowsContainer = document.getElementById("rows");
+      if (rowCount > 1) {
+        rowsContainer.removeChild(rowsContainer.lastChild);
+        rowCount--;
+
+        // Disable the "Remove Row" button if no rows left
+        document.querySelector('input[value="Remove Row"]').disabled = rowCount === 1;
+      }
+    }
+
+
+    function addRecords() {
+      var rows = document.getElementsByClassName("row");
+      data = [];
+
+      var isValid = true;
+
+      for (var i = 0; i < rows.length; i++) {
+        var dateInput = rows[i].getElementsByClassName("date")[0];
+        var partyNameInput = rows[i].getElementsByClassName("party_name")[0];
+        var stationInput = rows[i].getElementsByClassName("station")[0];
+        var couriernameInput = rows[i].getElementsByClassName("couriername")[0];
+        var dockernoInput = rows[i].getElementsByClassName("dockerno")[0];
+        var narrationInput = rows[i].getElementsByClassName("narration")[0];
+
+        var date = dateInput.value;
+        var partyName = partyNameInput.value;
+        var station = stationInput.value;
+        var couriername = couriernameInput.value;
+        var dockerno = dockernoInput.value;
+        var narration = narrationInput.value;
+
+        clearWarnings(dateInput, partyNameInput, stationInput, couriernameInput, dockernoInput, narrationInput);
+
+        if (!date || !partyName || !station || !couriername || !dockerno || !narration) {
+          isValid = false;
+          displayAlert("Please fill in all required fields");
+          break;
+        }
+
+        if (!validateDate(date)) {
+          isValid = false;
+          displayAlert("Invalid date format");
+          break;
+        }
+
+
+        data.push([date, partyName, station, couriername, dockerno, narration]);
+      }
+
+      if (isValid) {
+        google.script.run.withSuccessHandler(function (sheetUrl) {
+          addRecordsToExistingSheet(sheetUrl);
+          // Reload the page after submitting the form
+          location.reload();
+        }).getSheetUrl();
+      }
+    }
+
+    function addRecordsToExistingSheet(sheetUrl) {
+  google.script.run.addRecords(data, sheetUrl);
+
+  showAlert("Data added to the existing sheet!");
+
+  // Clear the rows container
+  var rowsContainer = document.getElementById("rows");
+  while (rowsContainer.firstChild) {
+    rowsContainer.removeChild(rowsContainer.firstChild);
+  }
+
+  // Add a new row after clearing the container
+  addRow();
+
+  // Reset the form to its initial state
+  document.getElementById("dataForm").reset();
+
+  // Close the Google Workspace dialog or sidebar
+  google.script.host.close();
+}
+
+
+    function showAlert(message) {
+      window.alert(message);
+    }
+
+    function validateDate(dateString) {
+      var regex = /^\d{4}-\d{2}-\d{2}$/;
+      return regex.test(dateString);
+    }
+
+    function isnarrationAfter(startDate, narration) {
+      return new Date(narration) > new Date(startDate);
+    }
+
+    function displayAlert(message) {
+      window.alert(message);
+    }
+
+    function clearWarnings() {
+      for (var i = 0; i < arguments.length; i++) {
+        var inputElement = arguments[i];
+        inputElement.setCustomValidity('');
+      }
+    }
+  </script>
+</body>
+
+</html>
+
